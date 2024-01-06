@@ -4,6 +4,10 @@ require 'vendor/autoload.php';
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\RetryMiddleware;
+
 
 class ApiPerformanceTester {
     private $client;
@@ -11,9 +15,30 @@ class ApiPerformanceTester {
     private $logger;
 
     public function __construct($dbManager, $logger) {
-        $this->client = new Client(['http_errors' => false]);
+        $stack = HandlerStack::create();
+        $stack->push($this->createRetryMiddleware());
+        
+        $this->client = new Client(['handler' => $stack, 'http_errors' => false]);
         $this->dbManager = $dbManager;
         $this->logger = $logger;
+    }
+
+    private function createRetryMiddleware() {
+        return Middleware::retry(
+            function($retry, $request, $response, $exception) {
+                // Retry conditions: response is null (network issue) or status code is 5xx (server errors)
+                if ($response && $response->getStatusCode() < 500) {
+                    return false;
+                }
+                if ($retry >= 3) { // Limit the number of retries to 3
+                    return false;
+                }
+                return true;
+            },
+            function($retry) {
+                return 1000 * $retry; // Wait time between retries (ms)
+            }
+        );
     }
 
     public function performConcurrencyTest($urls) {
@@ -106,5 +131,19 @@ class ApiPerformanceTester {
         // ... Implement analysis based on response times, error rates, etc.
     }
 
-    // Additional methods for detailed logging, rate limiting checks, etc.
+    // Method to run a custom test script
+    public function runCustomTest($url, callable $testFunction) {
+        try {
+            $response = $this->client->request('GET', $url); // Or other methods as needed
+            $result = $testFunction($response); // Execute the custom test function
+
+            // Log or process the result of the custom test
+            $this->logger->info("Custom test completed", ['url' => $url, 'result' => $result]);
+
+            return $result;
+        } catch (Exception $e) {
+            $this->logger->error("Custom test failed", ['url' => $url, 'error' => $e->getMessage()]);
+            return null;
+        }
+    }
 }
