@@ -1,4 +1,18 @@
 <?php
+
+# $analyzer = new ApiAnalyzer($dbManager, $logger);
+# // Define a custom test function
+# $customTestFunction = function($response) {
+#    // Custom logic to evaluate the response
+#    // For example, check if a specific field is present in JSON response:
+#    $body = json_decode($response->getBody(), true);
+#    return isset($body['expectedField']);
+#};
+
+// Run the custom test
+$analyzer->runCustomTest('https://api.example.com/endpoint', $customTestFunction);
+
+
 require 'vendor/autoload.php';
 
 use GuzzleHttp\Client;
@@ -7,7 +21,6 @@ use GuzzleHttp\Promise;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\RetryMiddleware;
-
 
 class ApiPerformanceTester {
     private $client;
