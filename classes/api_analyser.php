@@ -7,11 +7,50 @@ use GuzzleHttp\Promise;
 
 class ApiPerformanceTester {
     private $client;
-    private $apiCredentials;
+    private $dbManager;
+    private $logger;
 
-    public function __construct($apiCredentials) {
-        $this->client = new Client();
-        $this->apiCredentials = $apiCredentials;
+    public function __construct($dbManager, $logger) {
+        $this->client = new Client(['http_errors' => false]);
+        $this->dbManager = $dbManager;
+        $this->logger = $logger;
+    }
+
+    public function performConcurrencyTest($urls) {
+        $promises = [];
+
+        foreach ($urls as $url) {
+            $promises[$url] = $this->client->getAsync($url)
+                ->then(
+                    function ($response) use ($url) {
+                        $this->handleSuccessResponse($url, $response);
+                    },
+                    function ($exception) use ($url) {
+                        $this->handleErrorResponse($url, $exception);
+                    }
+                );
+        }
+
+        // Initiate the concurrent requests and wait for all to complete
+        $results = Promise\settle($promises)->wait();
+        $this->logger->logInfo("Concurrency Test Completed");
+    }
+
+    private function handleSuccessResponse($url, $response) {
+        // Extract necessary data from $response and log or store it
+        $statusCode = $response->getStatusCode();
+        // ...other data extraction...
+
+        // Store data into database
+        $this->dbManager->insertApiMetric(/* ...data... */);
+
+        // Log info about the successful request
+        $this->logger->logInfo("Request to $url successful with status $statusCode");
+    }
+
+    private function handleErrorResponse($url, $exception) {
+        // Log error details
+        $this->logger->logError("Request to $url failed.", $exception);
     }
 
     public function analyzeApiResponse($url) {
