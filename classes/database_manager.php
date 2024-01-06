@@ -29,6 +29,16 @@ class DatabaseManager {
         }
     }
 
+    public function getTotalRequestsCount() {
+        $stmt = $this->pdo->query('SELECT COUNT(*) FROM api_metrics');
+        return $stmt->fetchColumn();
+    }
+
+    public function getErrorRequestsCount() {
+        $stmt = $this->pdo->query('SELECT COUNT(*) FROM api_metrics WHERE statusCode >= 400');
+        return $stmt->fetchColumn();
+    }
+    
     public function insertApiMetric($metric) {
         $stmt = $this->pdo->prepare('INSERT INTO api_metrics (dateTime, url, responseTime, statusCode, errorRate, ...) VALUES (:dateTime, :url, :responseTime, :statusCode, :errorRate, ...)');
 
