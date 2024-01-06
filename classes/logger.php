@@ -15,12 +15,15 @@ class Logger {
     }
 
     public function log(LogLevel $level, $message, $context = []) {
-        $timestamp = date('Y-m-d H:i:s');
-        $contextJson = !empty($context) ? json_encode($context) : '';
+        $logEntry = [
+            'timestamp' => date('Y-m-d H:i:s'),
+            'level' => $level->value,
+            'message' => $message,
+            'context' => $context
+        ];
 
-        $logEntry = sprintf("[%s] %s: %s %s\n", $timestamp, $level->value, $message, $contextJson);
-
-        file_put_contents($this->logFilePath, $logEntry, FILE_APPEND | LOCK_EX);
+        $jsonLogEntry = json_encode($logEntry) . "\n";
+        file_put_contents($this->logFilePath, $jsonLogEntry, FILE_APPEND | LOCK_EX);
     }
 
     public function info($message, $context = []) {
