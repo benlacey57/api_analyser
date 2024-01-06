@@ -1,5 +1,13 @@
 <?php
 
+# $detector = new IssueDetector('/path/to/log.txt');
+# $issues = $detector->analyzeLogs();
+
+# foreach ($issues as $issue) {
+#    echo $issue . PHP_EOL;
+#}
+
+
 class IssueDetector {
     private $logFilePath;
     private $issues = [];
