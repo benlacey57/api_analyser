@@ -115,18 +115,18 @@ class DatabaseManager {
      * Imports k6 test data from a JSON file into the database
      * @param string $jsonFilePath Path to the k6 JSON output file
      */
-    public function importK6Data($jsonFilePath) {
+    public function importK6Data($jsonFilePath, $testType, $testId) {
         $jsonData = json_decode(file_get_contents($jsonFilePath), true);
 
         foreach ($jsonData as $entry) {
-            // Assuming a structure of JSON data. Adapt as necessary.
+            // Extract metric data from entry (customize based on actual JSON structure)
             $metricName = $entry['metric']['name'] ?? null;
             $metricValue = $entry['data']['value'] ?? null;
             $testTimestamp = $entry['data']['timestamp'] ?? null;
-            
+        
             // Insert data into the k6_test_data table
-            $stmt = $this->pdo->prepare("INSERT INTO k6_test_data (metric_name, metric_value, test_timestamp) VALUES (?, ?, ?)");
-            $stmt->execute([$metricName, $metricValue, $testTimestamp]);
+            $stmt = $this->pdo->prepare("INSERT INTO k6_test_data (metric_name, metric_value, test_timestamp, test_type, test_id) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$metricName, $metricValue, $testTimestamp, $testType, $testId]);
         }
     }
     
