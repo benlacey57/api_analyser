@@ -31,6 +31,16 @@ CREATE TABLE identified_issues (
     additionalInfo TEXT
 );
 
+CREATE TABLE k6_test_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    metric_name TEXT,
+    metric_value REAL,
+    test_timestamp DATETIME,
+    tags TEXT,
+    test_type TEXT,  -- Type of test (spike, soak, stress, etc.)
+    test_id TEXT     -- Unique identifier for a k6 test run
+);
+
 -- Indexes
 CREATE INDEX idx_api_metrics_url ON api_metrics(url);
 CREATE INDEX idx_api_metrics_statusCode ON api_metrics(statusCode);
