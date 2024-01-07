@@ -11,9 +11,12 @@ class DatabaseManager {
      * Constructor for the DatabaseManager
      * @param string $dbPath Path to the SQLite database file
      */
-    public function __construct($dbPath) {
+    public function __construct() {
+        $dotenv = Dotenv::createImmutable(__DIR__);
+        $dotenv->load();
+
+        $dbPath = $_ENV['DB_PATH'];
         $this->connect($dbPath);
-        $this->initializeTables();
     }
 
     /**
@@ -98,9 +101,26 @@ class DatabaseManager {
         $stmt->execute($data);
     }
 
-    // Add methods for aggregating and retrieving data as necessary
+    /**
+     * Imports k6 test data from a JSON file into the database
+     * @param string $jsonFilePath Path to the k6 JSON output file
+     */
+    public function importK6Data($jsonFilePath) {
+        $jsonData = json_decode(file_get_contents($jsonFilePath), true);
 
-    // ...[Other necessary methods for data retrieval, updating, and aggregation]...
+        foreach ($jsonData as $entry) {
+            // Assuming a structure of JSON data. Adapt as necessary.
+            $metricName = $entry['metric']['name'] ?? null;
+            $metricValue = $entry['data']['value'] ?? null;
+            $testTimestamp = $entry['data']['timestamp'] ?? null;
+            
+            // Insert data into the k6_test_data table
+            $stmt = $this->pdo->prepare("INSERT INTO k6_test_data (metric_name, metric_value, test_timestamp) VALUES (?, ?, ?)");
+            $stmt->execute([$metricName, $metricValue, $testTimestamp]);
+        }
+    }
+    
+    // Add methods for aggregating and retrieving data as necessary
 }
 
 // Usage
