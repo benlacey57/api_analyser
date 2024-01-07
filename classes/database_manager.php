@@ -1,4 +1,8 @@
 <?php
+// Include necessary libraries
+require 'vendor/autoload.php';
+
+use Dotenv\Dotenv;
 
 class DatabaseManager {
     private $pdo;
