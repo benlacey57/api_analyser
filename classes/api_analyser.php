@@ -91,6 +91,22 @@ class ApiAnalyzer {
     // Add other methods as needed, such as running custom tests or detailed error analysis
 }
 
+/**
+ * Runs a custom test case
+ * @param TestCase $testCase A test case instance to run
+ * @return mixed The result of the test case
+ */
+public function runCustomTestCase(TestCase $testCase) {
+    try {
+        $response = $this->client->request('GET', $testCase->url); // Or other methods as needed
+        $testCase->setResponse($response); // Assuming response is in a format the test case can handle
+        return $testCase->execute();
+    } catch (Exception $e) {
+        // Handle error
+        return null;
+    }
+}
+
 // Usage
 // $dbManager = new DatabaseManager('/path/to/database.db');
 // $logger = new Logger('/path/to/log.txt');
